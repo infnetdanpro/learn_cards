@@ -1,0 +1,8 @@
+{% extends 'main/layout.html' %}
+{% block content %}
+	<ul>
+	{% for word in words %}
+		<li>{{ word }}</li>
+	{% endfor %}
+	</ul>
+{% endblock %}
