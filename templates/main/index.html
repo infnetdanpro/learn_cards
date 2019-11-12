@@ -1,8 +1,20 @@
 {% extends 'main/layout.html' %}
 {% block content %}
-	<ul>
-	{% for word in words %}
-		<li>{{ word }}</li>
-	{% endfor %}
-	</ul>
+<div class="container card-main">
+	<div class="row">
+		{% for category in categories %}
+		<div class="col-sm-3 text-center">
+			<div class="card" style="width: 16rem;">
+				<center>
+					<div class="card-body">
+						<h2 class="card-title">{{ category.name }}</h2>
+						<p class="card-text">Words: {{ category.count_words }}</p>
+						<a href="{{ url_for('category', category_id=category.id) }}" class="btn btn-success">Start learning</a>
+					</div>
+				</center>	
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
 {% endblock %}
