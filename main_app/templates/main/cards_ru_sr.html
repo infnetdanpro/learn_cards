@@ -26,16 +26,16 @@
 			</div>
 			<br>
 			    {% if cards.has_prev %}
-			    	<a type="button" class="btn btn-info" href="{{ url_for('category_words', category_id=category_id, page=cards.prev_num) }}">Prev</a>
+			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num) }}">Prev</a>
 			    {% endif %}
 			    {% if cards.has_next %}
 				    {% if exam %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('category_words', category_id=category_id, page=cards.next_num, exam=exam) }}">Next</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num, exam=exam) }}">Next</a>
 				    {% else %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('category_words', category_id=category_id, page=cards.next_num) }}">Next</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num) }}">Next</a>
 				    {% endif %}
 			    {% else %}
-			    	<a type="button" class="btn btn-info" href="{{ url_for('category', category_id=category_id) }}">Finish</a>
+			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category', category_id=category_id) }}">Finish</a>
 			    {% endif %}
 		</center>
 		{% endfor %}

@@ -11,7 +11,7 @@ $(document).ready(function() {
 	function send_vote(vote, card_id, before_send, success, error) {
 		$.ajax({
 			type: 'POST',
-			url: '/card/vote',
+			url: '/vote',
 			data: {vote, card_id},
 			beforeSend: before_send,
 			success: success,

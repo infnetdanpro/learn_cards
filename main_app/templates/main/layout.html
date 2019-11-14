@@ -24,13 +24,13 @@
   <body>
     <div class="container">
       <nav class="navbar navbar-dark bg-dark">
-        <a class="navbar-brand" href="{{ url_for('index') }}">Main</a>
+        <a class="navbar-brand" href="{{ url_for('card.index') }}">Main</a>
         <ul class="nav justify-content-end">
           <!-- <li class="nav-item">
             <a class="nav-link active" href="#">Category</a>
           </li> -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('random_word') }}"><b>Random Word</b></a>
+            <a class="nav-link" href="{{ url_for('card.random_word') }}"><b>Random Word</b></a>
           </li>
           <!-- <li class="nav-item">
             <a class="nav-link disabled" href="#">Disabled</a>
