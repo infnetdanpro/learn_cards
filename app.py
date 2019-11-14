@@ -23,7 +23,7 @@ migrate.init_app(app, db)
 """Models"""
 class BaseModel(db.Model):
     __abstract__ = True
-    __table_args__ = {'sqlite_autoincrement': True}
+    __table_args__ = {'sqlite_autoincrement': True}     # remove if postgres
     id = db.Column(db.Integer, primary_key=True)
 
 

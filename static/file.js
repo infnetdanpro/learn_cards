@@ -32,7 +32,8 @@ $(document).ready(function() {
 	}
 	button.disabled = true;
 
-	send_vote(vote, card_id, (before_send) => {
+	send_vote(vote, card_id, 
+		(before_send) => {
 			button.disabled = true;
 		},
 		(response) => {
