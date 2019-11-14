@@ -135,7 +135,7 @@ def index():
     return render_template('main/index.html', categories=categories)
 
 
-@app.route('/random_word')
+@app.route('/card/random')
 def random_word():
     card = db.session.query(Card).order_by(func.random()).first()
     return render_template('main/card_random.html', card=card)
@@ -164,6 +164,35 @@ def category_words(category_id, page=1):
     return render_template(template_name, cards=paginate_cards, category_id=category_id, exam=exam)
 
 
+@app.route('/card/vote', methods=['POST'])
+def card_vote():
+    card_id = request.form.get('card_id', 0, int)
+    vote = request.form.get('vote')
+    card = db.session.query(Card).get(card_id)
+    
+    response = dict()
+    if vote == 'true':
+        if card.vote_yes:
+            card.vote_yes += 1
+            response = card.vote_yes
+        else:
+            card.vote_yes = 1
+            response = card.vote_yes
+    elif vote == 'false':
+        if card.vote_no:
+            card.vote_no += 1
+            response = card.vote_no
+        else:
+            card.vote_no = 1
+            response = card.vote_no
+    else:
+        raise ValueError('Bad vote')
+    
+    db.session.commit()
+    return jsonify({'card_id':card.id, 'result': response}), 200
+
+
+"""Debug routes"""
 @app.route('/parse_yaml')
 def card_parse_yaml():
     app_directory = os.path.join(os.getcwd(), 'dictionary')

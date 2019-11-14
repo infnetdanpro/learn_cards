@@ -10,8 +10,10 @@
 			  <div class="card-body">
 			    <h2 class="card-title"><b>{{ card.translated_word.capitalize() }}</b></h2>
 			    <p class="card-text">{{ card.original_word }}</p>
-			    <button type="button" class="btn btn-link" style="text-decoration: none;">&#128578; {% if card.vote_yes %}{{ card.vote_yes }}{% else %}0{% endif %}</button>
-			    <button type="button" class="btn btn-link" style="text-decoration: none;">&#128533; {% if card.vote_no %}{{ card.vote_no }}{% else %}0{% endif %}</button> 
+			    <button type="button" class="btn btn-link vote" data-card-id="{{ card.id }}"
+			    data-card-vote="1" style="text-decoration: none;">&#128578; <span class="vote-{{ card.id }}">{% if card.vote_yes %}{{ card.vote_yes }}{% else %}0{% endif %}</span></button>
+			    <button type="button" class="btn btn-link vote" data-card-id="{{ card.id }}"
+			    data-card-vote="0" style="text-decoration: none;">&#128533; <span class="vote-{{ card.id }}">{% if card.vote_no %}{{ card.vote_no }}{% else %}0{% endif %}</span></button> 
 			  </div>
 			</div>
 			<br>
