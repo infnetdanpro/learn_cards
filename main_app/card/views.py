@@ -1,10 +1,11 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
-from main_app.card.models import Card, Category, CategoryCards
+from flask_login import current_user
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 
+from main_app.card.models import Card, Category, CategoryCards
 from main_app.tools.save_image import save_image
 from main_app.tools.translate import translate
 from main_app.tools.parse_yaml import list_files, parse_yaml
@@ -23,13 +24,13 @@ def index():
 @card.route('/random')
 def random_word():
     card = db.session.query(Card).order_by(func.random()).first()
-    return render_template('main/card_random.html', card=card)
+    return render_template('main/card/card_random.html', card=card)
 
 
 @card.route('/category/<int:category_id>')
 def category(category_id):
     category = db.session.query(Category).get(category_id)
-    return render_template('main/category.html', category=category)
+    return render_template('main/card/category.html', category=category)
 
 
 @card.route('/category/<int:category_id>/<int:page>')
@@ -43,9 +44,9 @@ def category_words(category_id, page=1):
         cards.append(category_card.card_id)
     
     paginate_cards = db.session.query(Card).filter(Card.id.in_(cards)).order_by(Card.id).paginate(page, per_page)
-    template_name = 'main/cards.html'
+    template_name = 'main/card/cards.html'
     if exam == 2:
-        template_name = 'main/cards_ru_sr.html'
+        template_name = 'main/card/cards_ru_sr.html'
     return render_template(template_name, cards=paginate_cards, category_id=category_id, exam=exam)
 
 
