@@ -19,14 +19,18 @@
 			    <p class="card-text {% if exam == 2 %}hide-word{% endif %}">{{ card.translated_word.capitalize() }}</p>
 			    <p class="card-text {% if exam == 0 %}hide-word{% endif %}"><button type="button" class="btn btn-primary open-word">Open word</button></p>
 			    <button type="button" class="btn btn-link vote" data-card-id="{{ card.id }}"
-			    data-card-vote="1" style="text-decoration: none;">&#128578; <span class="vote-{{ card.id }}">{% if card.vote_yes %}{{ card.vote_yes }}{% else %}0{% endif %}</span></button>
+			    data-card-vote="1" style="text-decoration: none;">&#128578; <span id="positive" class="vote-{{ card.id }}">{{ card.vote_yes(current_user.id) }}</span></button>
 			    <button type="button" class="btn btn-link vote" data-card-id="{{ card.id }}"
-			    data-card-vote="0" style="text-decoration: none;">&#128533; <span class="vote-{{ card.id }}">{% if card.vote_no %}{{ card.vote_no }}{% else %}0{% endif %}</span></button>  
+			    data-card-vote="0" style="text-decoration: none;">&#128533; <span id="negative" class="vote-{{ card.id }}">{{ card.vote_no(current_user.id) }}</span></button>  
 			  </div>
 			</div>
 			<br>
 			    {% if cards.has_prev %}
-			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num) }}">Prev</a>
+					 {% if exam %}
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num, exam=exam) }}">Prev</a>
+				    {% else %}
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num) }}">Prev</a>
+				    {% endif %}
 			    {% endif %}
 			    {% if cards.has_next %}
 				    {% if exam %}

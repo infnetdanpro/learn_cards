@@ -1,15 +1,16 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
 
-from main_app.card.models import Card, Category, CategoryCards
+from main_app import db
+from main_app.card.models import Card, Category, CategoryCards, CardStats
 from main_app.tools.save_image import save_image
 from main_app.tools.translate import translate
 from main_app.tools.parse_yaml import list_files, parse_yaml
-from main_app import db
 
 
 card = Blueprint('card', __name__, template_folder='templates')
@@ -50,32 +51,42 @@ def category_words(category_id, page=1):
     return render_template(template_name, cards=paginate_cards, category_id=category_id, exam=exam)
 
 
+def handling_vote(vote_request_str: str) -> tuple:
+    if vote_request_str == 'true':
+        vote_request_str = 1
+        positive = True
+    elif vote_request_str == 'false':
+        vote_request_str = -1
+        positive = False
+    else:
+        raise ValueError("Can't detect your vote!")
+    return vote_request_str, positive
+
+
 @card.route('/vote', methods=['POST'])
+@login_required
 def card_vote():
     card_id = request.form.get('card_id', 0, int)
-    vote = request.form.get('vote')
     card = db.session.query(Card).get(card_id)
+    vote, positive = handling_vote(request.form.get('vote'))
     
-    response = dict()
-    if vote == 'true':
-        if card.vote_yes:
-            card.vote_yes += 1
-            response = card.vote_yes
-        else:
-            card.vote_yes = 1
-            response = card.vote_yes
-    elif vote == 'false':
-        if card.vote_no:
-            card.vote_no += 1
-            response = card.vote_no
-        else:
-            card.vote_no = 1
-            response = card.vote_no
-    else:
-        raise ValueError('Bad vote')
+    response = dict(card_id=card.id)
     
-    db.session.commit()
-    return jsonify({'card_id':card.id, 'result': response}), 200
+    try:
+        card_stat = db.session.query(CardStats).filter(CardStats.card_id==card.id, CardStats.user_id==current_user.id).one()
+        if vote is not card_stat.vote:
+            card_stat.vote = vote
+            db.session.commit()
+        else:
+            return '', 200
+    except NoResultFound:
+        card_stat = CardStats(card=card, vote=vote, user=current_user)
+        db.session.add(card_stat)
+        db.session.commit()
+    positive, negative = CardStats.get_stats(card_id=card.id)
+    response['result'] = dict(positive=positive, negative=negative)
+    return jsonify(response), 200
+
 
 @card.route('/parse_yaml')
 def card_parse_yaml():

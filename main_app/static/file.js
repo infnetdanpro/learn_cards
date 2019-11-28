@@ -38,7 +38,8 @@ $(document).ready(function() {
 		},
 		(response) => {
 			button.disabled = false;
-			$(button.firstElementChild).text(response.result);
+			$('span#positive').text(response.result.positive);
+			$('span#negative').text(response.result.negative);
 		}, 
 		(error) => {
 			button.disabled = false;

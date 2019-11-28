@@ -1,5 +1,9 @@
 from main_app.database import db
 from datetime import datetime
+from time import sleep
+
+from sqlalchemy import func, text
+from main_app.tools.translate import translate
 
 
 class BaseModel(db.Model):
@@ -15,8 +19,12 @@ class Card(BaseModel):
     translated_word = db.Column(db.String(128), nullable=False)
     active = db.Column(db.Boolean(), default=True)
     created_at = db.Column(db.DateTime(), default=datetime.now)
-    vote_yes = db.Column(db.Integer, nullable=True)
-    vote_no = db.Column(db.Integer, nullable=True)
+
+    def vote_yes(self, user_id):
+        return CardStats.get_positive_votes(self.id)
+
+    def vote_no(self, user_id):
+        return CardStats.get_negative_votes(self.id)
 
     def __repr__(self) -> str:
         return f'<Card>: "{self.original_word}, {self.translated_word}"'
@@ -30,25 +38,22 @@ class Card(BaseModel):
         category = Category.get_or_create(category_name)
         for word in words:
             if ':' in word:
-                word, custom_translate = word.split(':')[0], word.split(':')[1]
+                word, translated_word = word.split(':')[0], word.split(':')[1]
+            else:
+                translated_word = translate(word)
+                sleep(0.5)
             card = db.session.query(Card).filter(Card.original_word==word).first()
             if card is None:
-                if custom_translate:
-                    translated_word = custom_translate
-                else:
-                    translated_word = translate(word)
-
-                card = Card(original_word=word, translated_word=translated_word)
-                sleep(0.5)
                 try:
+                    card = Card(original_word=word, translated_word=translated_word)
                     db.session.add(card)
                     db.session.commit()
                     category_and_card = CategoryCards(category_id=category.id, card_id=card.id)
                     db.session.add(category_and_card)
                     db.session.commit()
-                except:
+                except Exception as e:
                     db.session.rollback()
-                    print('Not added, ', card)
+                    print(f'Not added, {card}, {e}')
             else:
                 category_and_card = db.session.query(CategoryCards).filter(CategoryCards.card_id==card.id, CategoryCards.category_id==category.id).first()
                 if category_and_card is None:
@@ -107,3 +112,40 @@ class CategoryCards(BaseModel):
     # category = db.relationship('Category')
     card_id = db.Column(db.Integer, db.ForeignKey('card.id'))
     # card = db.relationship('Card')
+
+
+class CardStats(BaseModel):
+    __tablename__ = 'card_stats'
+
+    card_id = db.Column(db.Integer, db.ForeignKey('card.id'), nullable=False)
+    card = db.relationship('Card')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User')
+    vote = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime(), default=datetime.now, index=True, nullable=False)
+
+    @classmethod
+    def add(cls, card, user, vote) -> bool:
+        result = False
+        try:
+            card_stat = cls(card=card, user=user, vote=vote)
+            db.session.add(card_stat)
+            db.session.commit()
+            return True 
+        except:
+            db.session.rollback()
+            return False
+
+    @classmethod
+    def get_stats(cls, card_id, user_id=None):
+        positive_votes = cls.get_positive_votes(card_id)
+        negative_votes = cls.get_negative_votes(card_id)
+        return positive_votes, negative_votes
+
+    @classmethod
+    def get_positive_votes(cls, card_id):
+        return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == 1).count()
+
+    @classmethod
+    def get_negative_votes(cls, card_id):
+        return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == -1).count()
