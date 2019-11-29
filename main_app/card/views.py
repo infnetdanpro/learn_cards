@@ -1,13 +1,17 @@
 import os
-from flask import Blueprint, render_template, request, jsonify
-from flask_login import current_user, login_required
+import itertools
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import func
+from sqlalchemy import func, text, desc, asc
+from sqlalchemy.inspection import inspect
+
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from flask_login import current_user, login_required
 
 from main_app import db
 from main_app.card.models import Card, Category, CategoryCards, CardStats
+from main_app.auth.models import UserSeed
 from main_app.tools.save_image import save_image
 from main_app.tools.translate import translate
 from main_app.tools.parse_yaml import list_files, parse_yaml
@@ -30,21 +34,35 @@ def random_word():
 
 @card.route('/category/<int:category_id>')
 def category(category_id):
+    finish = True if request.args.get('finish') == 'True' else False
+    if finish and current_user.is_authenticated:
+        result = UserSeed.create_new_seed(current_user)
+        return redirect(url_for('card.category', category_id=category_id))
+    
     category = db.session.query(Category).get(category_id)
     return render_template('main/card/category.html', category=category)
 
 
 @card.route('/category/<int:category_id>/<int:page>')
 def category_words(category_id, page=1):
+    import random
+    seed = UserSeed.get_for_user(current_user)
     exam = request.args.get('exam', 0, int)
     per_page = 1
-    cards = list()
-    category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).order_by(CategoryCards.category_id).all()
+    # only for postgres example
+    # category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).filter(text(f'setseed({seed})')).order_by(func.random()).all()
 
-    for category_card in category_cards:
-        cards.append(category_card.card_id)
+    category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).order_by(CategoryCards.id).all()
+    cards = [category_card.card_id for category_card in category_cards]
     
-    paginate_cards = db.session.query(Card).filter(Card.id.in_(cards)).order_by(Card.id).paginate(page, per_page)
+    # only for sqlite
+    # Random ordering by column
+    columns = [column.name for column in inspect(Card).columns]
+    randomize = list(itertools.product(columns, [desc, asc]))
+    random.seed(seed)
+    column, ordering = random.choice(randomize)
+
+    paginate_cards = db.session.query(Card).filter(Card.id.in_(cards)).order_by(ordering(text(f'Card.{column}'))).paginate(page, per_page)
     template_name = 'main/card/cards.html'
     if exam == 2:
         template_name = 'main/card/cards_ru_sr.html'

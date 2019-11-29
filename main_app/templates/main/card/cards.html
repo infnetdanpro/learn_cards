@@ -39,7 +39,7 @@
 				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num) }}">Next</a>
 				    {% endif %}
 			    {% else %}
-			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category', category_id=category_id) }}">Finish</a>
+			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category', category_id=category_id, finish=True) }}">Finish</a>
 			    {% endif %}
 		</center>
 		{% endfor %}
