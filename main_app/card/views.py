@@ -1,5 +1,6 @@
 import os
 import itertools
+import random
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -45,7 +46,6 @@ def category(category_id):
 
 @card.route('/category/<int:category_id>/<int:page>')
 def category_words(category_id, page=1):
-    import random
     seed = UserSeed.get_for_user(current_user)
     exam = request.args.get('exam', 0, int)
     per_page = 1
@@ -55,12 +55,12 @@ def category_words(category_id, page=1):
     category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).order_by(CategoryCards.id).all()
     cards = [category_card.card_id for category_card in category_cards]
     
-    # only for sqlite
+    # only for sqlite. For postgres use setseed in DB!
     # Random ordering by column
     columns = [column.name for column in inspect(Card).columns]
-    randomize = list(itertools.product(columns, [desc, asc]))
+    random_pairs = list(itertools.product(columns, [desc, asc]))
     random.seed(seed)
-    column, ordering = random.choice(randomize)
+    column, ordering = random.choice(random_pairs)
 
     paginate_cards = db.session.query(Card).filter(Card.id.in_(cards)).order_by(ordering(text(f'Card.{column}'))).paginate(page, per_page)
     template_name = 'main/card/cards.html'
