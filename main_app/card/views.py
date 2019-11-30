@@ -35,8 +35,8 @@ def random_word():
 
 @card.route('/category/<int:category_id>')
 def category(category_id):
-    finish = True if request.args.get('finish') == 'True' else False
-    if finish and current_user.is_authenticated:
+    if request.args.get('finish'):
+        finish = True if request.args.get('finish') == 'True' else False
         result = UserSeed.create_new_seed(current_user)
         return redirect(url_for('card.category', category_id=category_id))
     

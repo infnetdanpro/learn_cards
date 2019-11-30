@@ -49,8 +49,8 @@ class UserSeed(BaseModel):
     seed = db.Column(db.Integer())
 
     @classmethod
-    def get_or_create(cls, user: None = User) -> int:
-        if user:
+    def get_or_create(cls, user) -> int:
+        if user.is_authenticated:
             seed = None
             try:
                 user_seed = db.session.query(UserSeed).filter(UserSeed.user == user).one()
@@ -62,7 +62,7 @@ class UserSeed(BaseModel):
         else:
             default_seed = None
             try:
-                default_seed = db.session.query(UserSeed).filter(UserSeed.user.is_(None)).one()
+                default_seed = db.session.query(UserSeed).filter(UserSeed.user == None).one()
             except NoResultFound:
                 default_seed = cls(seed=rand())
                 db.session.add(default_seed)
@@ -70,16 +70,20 @@ class UserSeed(BaseModel):
             return int(default_seed.seed)
 
     @classmethod
-    def get_for_user(cls, user: None = User) -> int:
-        return cls.get_or_create(user) if user.is_authenticated else cls.get_or_create()
+    def get_for_user(cls, user) -> int:
+        return cls.get_or_create(user)
 
 
     @classmethod
-    def create_new_seed(cls, user: User) -> bool:
-        """Only for real user"""
+    def create_new_seed(cls, user) -> bool:
         if user.is_authenticated:
             user_seed = db.session.query(UserSeed).filter(UserSeed.user == user).one()
             user_seed.seed = rand()
+            db.session.commit()
+            return True
+        else:
+            default_seed = db.session.query(UserSeed).filter(UserSeed.user == None).one()
+            default_seed.seed = rand()
             db.session.commit()
             return True
         return False
