@@ -2,9 +2,9 @@ import os
 import itertools
 import random
 
+from sqlalchemy import func, text, desc, asc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import func, text, desc, asc
 from sqlalchemy.inspection import inspect
 
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
@@ -13,9 +13,7 @@ from flask_login import current_user, login_required
 from main_app import db
 from main_app.card.models import Card, Category, CategoryCards, CardStats
 from main_app.auth.models import UserSeed
-from main_app.tools.save_image import save_image
-from main_app.tools.translate import translate
-from main_app.tools.parse_yaml import list_files, parse_yaml
+from main_app.tools import save_image, translate, list_files, parse_yaml
 
 
 card = Blueprint('card', __name__, template_folder='templates')
@@ -46,13 +44,16 @@ def category(category_id):
 
 @card.route('/category/<int:category_id>/<int:page>')
 def category_words(category_id, page=1):
-    seed = UserSeed.get_for_user(current_user)
+    seed = UserSeed.get_by_user(current_user)
     exam = request.args.get('exam', 0, int)
     per_page = 1
     # only for postgres example
     # category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).filter(text(f'setseed({seed})')).order_by(func.random()).all()
 
-    category_cards = db.session.query(CategoryCards).filter(CategoryCards.category_id==category_id).order_by(CategoryCards.id).all()
+    category_cards = db.session.query(CategoryCards) \
+                    .filter(CategoryCards.category_id==category_id) \
+                    .order_by(CategoryCards.id) \
+                    .all()
     cards = [category_card.card_id for category_card in category_cards]
     
     # only for sqlite. For postgres use setseed in DB!
@@ -69,16 +70,14 @@ def category_words(category_id, page=1):
     return render_template(template_name, cards=paginate_cards, category_id=category_id, exam=exam)
 
 
-def handling_vote(vote_request_str: str) -> tuple:
-    if vote_request_str == 'true':
-        vote_request_str = 1
-        positive = True
-    elif vote_request_str == 'false':
-        vote_request_str = -1
-        positive = False
+def vote_handle(param_vote: str) -> tuple:
+    if param_vote == 'true':
+        param_vote = 1
+    elif param_vote == 'false':
+        param_vote = -1
     else:
         raise ValueError("Can't detect your vote!")
-    return vote_request_str, positive
+    return param_vote
 
 
 @card.route('/vote', methods=['POST'])
@@ -86,12 +85,14 @@ def handling_vote(vote_request_str: str) -> tuple:
 def card_vote():
     card_id = request.form.get('card_id', 0, int)
     card = db.session.query(Card).get(card_id)
-    vote, positive = handling_vote(request.form.get('vote'))
+    vote = vote_handle(request.form.get('vote'))
     
     response = dict(card_id=card.id)
     
     try:
-        card_stat = db.session.query(CardStats).filter(CardStats.card_id==card.id, CardStats.user_id==current_user.id).one()
+        card_stat = db.session.query(CardStats) \
+                                .filter(CardStats.card_id==card.id, CardStats.user_id==current_user.id) \
+                                .one()
         if vote is not card_stat.vote:
             card_stat.vote = vote
             db.session.commit()
@@ -101,8 +102,8 @@ def card_vote():
         card_stat = CardStats(card=card, vote=vote, user=current_user)
         db.session.add(card_stat)
         db.session.commit()
-    positive, negative = CardStats.get_stats(card_id=card.id)
-    response['result'] = dict(positive=positive, negative=negative)
+    likes_positive, likes_negative = CardStats.get_stats(card_id=card.id)
+    response['result'] = dict(positive=likes_positive, negative=likes_negative)
     return jsonify(response), 200
 
 

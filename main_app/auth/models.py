@@ -15,20 +15,19 @@ class User(BaseModel, UserMixin):
     __tablename__ = 'user'
     
     name = db.Column(db.String(128), nullable=True)
-    email = db.Column(db.String(256), nullable=False)
+    email = db.Column(db.String(256), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    last_logged_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
     @classmethod
-    def get(cls, user_id):
+    def get(cls, user_id: int) -> User or None:
         try:
             return db.session.query(User).get(user_id)
         except NoResultFound:
             return None
     
     @classmethod
-    def get_by_email(cls, email: str):
+    def get_by_email(cls, email: str) -> User or None:
         return db.session.query(User).filter(User.email == email).first()
 
     @classmethod
@@ -36,7 +35,7 @@ class User(BaseModel, UserMixin):
         return bool(db.session.query(User).filter(User.email == email).first())
 
     @classmethod
-    def get_or_none(cls, email: str, password_hash: str):
+    def get_or_none(cls, email: str, password_hash: str) -> User or None:
         user = db.session.query(User).filter(User.email == email, User.password == password_hash).first()
         return user
 
@@ -51,26 +50,24 @@ class UserSeed(BaseModel):
     @classmethod
     def get_or_create(cls, user) -> int:
         if user.is_authenticated:
-            seed = None
             try:
                 user_seed = db.session.query(UserSeed).filter(UserSeed.user == user).one()
             except NoResultFound:
                 user_seed = cls(user=user, seed=rand())
                 db.session.add(user_seed)
                 db.session.commit()
-            return int(user_seed.seed)
+            return user_seed.seed
         else:
-            default_seed = None
             try:
                 default_seed = db.session.query(UserSeed).filter(UserSeed.user == None).one()
             except NoResultFound:
                 default_seed = cls(seed=rand())
                 db.session.add(default_seed)
                 db.session.commit()
-            return int(default_seed.seed)
+            return default_seed.seed
 
     @classmethod
-    def get_for_user(cls, user) -> int:
+    def get_by_user(cls, user) -> int:
         return cls.get_or_create(user)
 
 
@@ -89,5 +86,5 @@ class UserSeed(BaseModel):
         return False
 
 
-def rand():
-    return randint(-100000, 10000)
+def rand() -> int:
+    return randint(-100000, 100000)
