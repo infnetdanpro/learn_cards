@@ -44,7 +44,7 @@ def login():
         if user:
             password_compared = verify_password(user.password, form.password.data)
             if password_compared:
-                user.last_logget_at = datetime.now()
+                user.last_logged_at = datetime.now()
                 db.session.commit()
                 login_user(user, remember=form.remember.data, force=True)
                 flash('User successfully logged in', 'success')

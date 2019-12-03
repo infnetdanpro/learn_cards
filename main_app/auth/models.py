@@ -21,6 +21,7 @@ class User(BaseModel, UserMixin):
     email = db.Column(db.String(256), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    last_logged_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
     @classmethod
     def get(cls, user_id: int):
