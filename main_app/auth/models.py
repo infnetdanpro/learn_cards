@@ -1,7 +1,10 @@
 from datetime import datetime
 from random import randint
+from typing import NewType
+
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import UserMixin
+
 from main_app.database import db
 
 
@@ -20,14 +23,14 @@ class User(BaseModel, UserMixin):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
     @classmethod
-    def get(cls, user_id: int) -> User or None:
+    def get(cls, user_id: int):
         try:
             return db.session.query(User).get(user_id)
         except NoResultFound:
             return None
     
     @classmethod
-    def get_by_email(cls, email: str) -> User or None:
+    def get_by_email(cls, email: str):
         return db.session.query(User).filter(User.email == email).first()
 
     @classmethod
@@ -35,7 +38,7 @@ class User(BaseModel, UserMixin):
         return bool(db.session.query(User).filter(User.email == email).first())
 
     @classmethod
-    def get_or_none(cls, email: str, password_hash: str) -> User or None:
+    def get_or_none(cls, email: str, password_hash: str):
         user = db.session.query(User).filter(User.email == email, User.password == password_hash).first()
         return user
 
