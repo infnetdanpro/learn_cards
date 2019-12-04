@@ -3,16 +3,16 @@
 <div class="container card-main">
 	<div class="col-md-12 text-center">
 		<center>
-			<div class="alert alert-primary" role="alert"  style="width: 18rem;">
-			  Word: {{ cards.page }} of {{ cards.total }}
+			<div class="alert alert-primary" role="alert"  style="width: 28rem;">
+			  Слово: {{ cards.page }} из {{ cards.total }}
 			</div>
 		</center>
 		
 		{% for card in cards.items %}
 		<center>
-			<div class="card" style="width: 18rem;">
+			<div class="card" style="width: 28rem;">
 			  <div class="card-header text-left">
-			    Categories: <b>{% for category in card.get_related_categories() %}{{ category.name }} {% endfor %}</b>
+			    Категории: <b>{% for category in card.get_related_categories() %}{{ category }}{% endfor %}</b>
 			  </div>
 			  <div class="card-body">
 			    <h2 class="card-title"><b>{{ card.translated_word.capitalize() }}</b></h2>
@@ -27,19 +27,19 @@
 			<br>
 			    {% if cards.has_prev %}
 					 {% if exam %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num, exam=exam) }}">Prev</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num, exam=exam) }}">Предыдущее</a>
 				    {% else %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num) }}">Prev</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.prev_num) }}">Предыдущее</a>
 				    {% endif %}
 			    {% endif %}
 			    {% if cards.has_next %}
 				    {% if exam %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num, exam=exam) }}">Next</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num, exam=exam) }}">Следующее</a>
 				    {% else %}
-				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num) }}">Next</a>
+				    	<a type="button" class="btn btn-info" href="{{ url_for('card.category_words', category_id=category_id, page=cards.next_num) }}">Следующее</a>
 				    {% endif %}
 			    {% else %}
-			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category', category_id=category_id, finish=True) }}">Finish</a>
+			    	<a type="button" class="btn btn-info" href="{{ url_for('card.category', category_id=category_id, finish=True) }}">Закончить</a>
 			    {% endif %}
 		</center>
 		{% endfor %}

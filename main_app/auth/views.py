@@ -27,10 +27,10 @@ def register():
                         password=hash_password(form.password.data))
             db.session.add(user)
             db.session.commit()
-            flash('User successfully registered', 'success')
+            flash('Пользователь зарегистрирован', 'success')
             return redirect(url_for('auth.login'))
         else:
-            flash('User is exists!', 'danger')
+            flash('Пользователь существует', 'danger')
     return render_template('main/auth/register.html', form=form)
 
 
@@ -47,11 +47,11 @@ def login():
                 user.last_logged_at = datetime.now()
                 db.session.commit()
                 login_user(user, remember=form.remember.data, force=True)
-                flash('User successfully logged in', 'success')
+                flash('Вы успешно вошли', 'success')
                 return redirect(url_for('card.index'))
-            flash('User email or password is incorrect', 'danger')
+            flash('Ваш email или пароль неверны', 'danger')
         else:
-            flash('User not found', 'danger')
+            flash('Пользователь не найден', 'danger')
     return render_template('main/auth/login.html', form=form)
 
 
@@ -59,9 +59,9 @@ def login():
 @login_required
 def logout():
     if current_user.is_authenticated:
-        flash('User successfully logged out', 'warning')
+        flash('Вы вышли', 'warning')
         logout_user()
         return redirect(url_for('card.index'))
     else:
-        flash('User not found', 'error')
+        flash('Пользователь не найден', 'error')
         return redirect(url_for('card.index'))

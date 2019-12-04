@@ -28,6 +28,8 @@ def index():
 @card.route('/random')
 def random_word():
     card = db.session.query(Card).order_by(func.random()).first()
+    if current_user.is_authenticated:
+        UserSeed.create_new_seed(current_user)
     return render_template('main/card/card_random.html', card=card)
 
 

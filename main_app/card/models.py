@@ -67,7 +67,8 @@ class Card(BaseModel):
         category_and_card = db.session.query(CategoryCards).filter(CategoryCards.card_id==self.id).all()
         for elem in category_and_card:
             category = db.session.query(Category).get(elem.category_id)
-            related_categories.append(category)
+            related_categories.append(category.name)
+        related_categories = ', '.join(related_categories)
         return related_categories
 
 

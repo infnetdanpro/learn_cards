@@ -3,20 +3,20 @@
 <div class="container">
 	<div class="row">
 		<div class="col-md-12 text-center">
-			<h1>Choice your category to learn words!</h1>
+			<h1>Выберите категорию для изучения слов</h1>
 		</div>
 	</div>
 </div>
 <div class="container card-main">
 	<div class="row">
 		{% for category in categories %}
-		<div class="col-sm-3 text-center">
+		<div class="col-sm-3 col-xs-2 text-center">
 			<div class="card" style="width: 16rem;">
 				<center>
 					<div class="card-body">
 						<h2 class="card-title">{{ category.name }}</h2>
-						<p class="card-text">Words: {{ category.count_words }}</p>
-						<a href="{{ url_for('card.category', category_id=category.id) }}" class="btn btn-success">Start learning</a>
+						<p class="card-text">Слова: {{ category.count_words }}</p>
+						<a href="{{ url_for('card.category', category_id=category.id) }}" class="btn btn-success">Начать изучение</a>
 					</div>
 				</center>	
 			</div>

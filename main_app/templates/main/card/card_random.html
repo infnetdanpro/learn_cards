@@ -3,9 +3,9 @@
 <div class="container card-main">
 	<div class="col-md-12 text-center">
 		<center>
-			<div class="card" style="width: 18rem;">
+			<div class="card" style="width: 28rem;">
 			  <div class="card-header text-left">
-			    Categories: <b>{% for category in card.get_related_categories() %}{{ category.name }} {% endfor %}</b>
+			    Категории: <b>{% for category in card.get_related_categories() %}{{ category }}{% endfor %}</b>
 			  </div>
 			  <div class="card-body">
 			    <h2 class="card-title"><b>{{ card.translated_word.capitalize() }}</b></h2>
@@ -17,7 +17,7 @@
 			  </div>
 			</div>
 			<br>
-			    <a type="button" class="btn btn-info" href="{{ url_for('card.random_word') }}">Get new random</a>
+			    <a type="button" class="btn btn-info" href="{{ url_for('card.random_word') }}">Новое случайное слово</a>
 		</center>
 	</div>
 </div>

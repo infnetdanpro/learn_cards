@@ -24,24 +24,24 @@
   <body>
     <div class="container">
       <nav class="navbar navbar-dark bg-dark">
-        <a class="navbar-brand" href="{{ url_for('card.index') }}">Main</a>
+        <a class="navbar-brand" href="{{ url_for('card.index') }}">Главная</a>
         <ul class="nav justify-content-end">
           <!-- <li class="nav-item">
             <a class="nav-link active" href="#">Category</a>
           </li> -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('card.random_word') }}"><b>Random Word</b></a>
+            <a class="nav-link" href="{{ url_for('card.random_word') }}"><b>Случайное слово</b></a>
           </li>
           {% if current_user.is_authenticated %}
           <li class="nav-item">
             <span class="nav-link disabled">{{ current_user.name }} ({{ current_user.email }})</span>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">Выход</a>
           </li>
           {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.login') }}">Sign-in</a>
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Войти</a>
           </li>
           {% endif %}
         </ul>
