@@ -144,9 +144,9 @@ class CardStats(BaseModel):
         return positive_votes, negative_votes
 
     @classmethod
-    def get_positive_votes(cls, card_id):
+    def get_positive_votes(cls, card_id: str) -> int:
         return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == 1).count()
 
     @classmethod
-    def get_negative_votes(cls, card_id):
+    def get_negative_votes(cls, card_id: str) -> int:
         return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == -1).count()
