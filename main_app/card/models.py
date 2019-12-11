@@ -62,7 +62,7 @@ class Card(BaseModel):
                     db.session.commit()
         return True
 
-    def get_related_categories(self):
+    def get_related_categories(self) -> list:
         related_categories = list()
         category_and_card = db.session.query(CategoryCards).filter(CategoryCards.card_id==self.id).all()
         for elem in category_and_card:
@@ -138,7 +138,7 @@ class CardStats(BaseModel):
             return False
 
     @classmethod
-    def get_stats(cls, card_id, user_id=None):
+    def get_stats(cls, card_id, user_id: int = None) -> tuple:
         positive_votes = cls.get_positive_votes(card_id)
         negative_votes = cls.get_negative_votes(card_id)
         return positive_votes, negative_votes
