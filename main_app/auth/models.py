@@ -10,13 +10,13 @@ from main_app.database import db
 
 class BaseModel(db.Model):
     __abstract__ = True
-    __table_args__ = {'sqlite_autoincrement': True}     # remove if postgres
+    __table_args__ = {"sqlite_autoincrement": True}  # remove if postgres
     id = db.Column(db.Integer(), primary_key=True)
 
 
 class User(BaseModel, UserMixin):
-    __tablename__ = 'user'
-    
+    __tablename__ = "user"
+
     name = db.Column(db.String(128), nullable=True)
     email = db.Column(db.String(256), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
@@ -29,7 +29,7 @@ class User(BaseModel, UserMixin):
             return db.session.query(User).get(user_id)
         except NoResultFound:
             return None
-    
+
     @classmethod
     def get_by_email(cls, email: str):
         return db.session.query(User).filter(User.email == email).first()
@@ -40,22 +40,28 @@ class User(BaseModel, UserMixin):
 
     @classmethod
     def get_or_none(cls, email: str, password_hash: str):
-        user = db.session.query(User).filter(User.email == email, User.password == password_hash).first()
+        user = (
+            db.session.query(User)
+            .filter(User.email == email, User.password == password_hash)
+            .first()
+        )
         return user
 
 
 class UserSeed(BaseModel):
-    __tablename__ = 'user_seeds'
+    __tablename__ = "user_seeds"
 
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship('User')
+    user_id = db.Column(db.Integer(), db.ForeignKey("user.id"), nullable=True)
+    user = db.relationship("User")
     seed = db.Column(db.Integer())
 
     @classmethod
     def get_or_create(cls, user) -> int:
         if user.is_authenticated:
             try:
-                user_seed = db.session.query(UserSeed).filter(UserSeed.user == user).one()
+                user_seed = (
+                    db.session.query(UserSeed).filter(UserSeed.user == user).one()
+                )
             except NoResultFound:
                 user_seed = cls(user=user, seed=rand())
                 db.session.add(user_seed)
@@ -63,7 +69,9 @@ class UserSeed(BaseModel):
             return user_seed.seed
         else:
             try:
-                default_seed = db.session.query(UserSeed).filter(UserSeed.user == None).one()
+                default_seed = (
+                    db.session.query(UserSeed).filter(UserSeed.user == None).one()
+                )
             except NoResultFound:
                 default_seed = cls(seed=rand())
                 db.session.add(default_seed)
@@ -74,7 +82,6 @@ class UserSeed(BaseModel):
     def get_by_user(cls, user) -> int:
         return cls.get_or_create(user)
 
-
     @classmethod
     def create_new_seed(cls, user) -> bool:
         if user.is_authenticated:
@@ -83,7 +90,9 @@ class UserSeed(BaseModel):
             db.session.commit()
             return True
         else:
-            default_seed = db.session.query(UserSeed).filter(UserSeed.user == None).one()
+            default_seed = (
+                db.session.query(UserSeed).filter(UserSeed.user == None).one()
+            )
             default_seed.seed = rand()
             db.session.commit()
             return True

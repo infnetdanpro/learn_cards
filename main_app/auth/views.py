@@ -8,7 +8,7 @@ from main_app.database import db
 from main_app.tools.password import hash_password, verify_password
 
 
-auth = Blueprint('auth', __name__, template_folder='templates')
+auth = Blueprint("auth", __name__, template_folder="templates")
 
 
 @login_manager.user_loader
@@ -16,30 +16,32 @@ def load_user(user_id):
     return User.get(user_id)
 
 
-@auth.route('/auth/register', methods=['GET', 'POST'])
+@auth.route("/auth/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm(request.form)
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == "POST" and form.validate_on_submit():
         user_exists = User.check_exists(email=form.email.data)
         if not user_exists:
-            user = User(name=form.name.data, 
-                        email=form.email.data, 
-                        password=hash_password(form.password.data))
+            user = User(
+                name=form.name.data,
+                email=form.email.data,
+                password=hash_password(form.password.data),
+            )
             db.session.add(user)
             db.session.commit()
-            flash('Пользователь зарегистрирован', 'success')
-            return redirect(url_for('auth.login'))
+            flash("Пользователь зарегистрирован", "success")
+            return redirect(url_for("auth.login"))
         else:
-            flash('Пользователь существует', 'danger')
-    return render_template('main/auth/register.html', form=form)
+            flash("Пользователь существует", "danger")
+    return render_template("main/auth/register.html", form=form)
 
 
-@auth.route('/auth/login', methods=['GET', 'POST'])
+@auth.route("/auth/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('card.index'))
+        return redirect(url_for("card.index"))
     form = LoginForm(request.form)
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == "POST" and form.validate_on_submit():
         user = User.get_by_email(email=form.email.data)
         if user:
             password_compared = verify_password(user.password, form.password.data)
@@ -47,21 +49,21 @@ def login():
                 user.last_logged_at = datetime.now()
                 db.session.commit()
                 login_user(user, remember=form.remember.data, force=True)
-                flash('Вы успешно вошли', 'success')
-                return redirect(url_for('card.index'))
-            flash('Ваш email или пароль неверны', 'danger')
+                flash("Вы успешно вошли", "success")
+                return redirect(url_for("card.index"))
+            flash("Ваш email или пароль неверны", "danger")
         else:
-            flash('Пользователь не найден', 'danger')
-    return render_template('main/auth/login.html', form=form)
+            flash("Пользователь не найден", "danger")
+    return render_template("main/auth/login.html", form=form)
 
 
-@auth.route('/auth/logout', methods=['GET'])
+@auth.route("/auth/logout", methods=["GET"])
 @login_required
 def logout():
     if current_user.is_authenticated:
-        flash('Вы вышли', 'warning')
+        flash("Вы вышли", "warning")
         logout_user()
-        return redirect(url_for('card.index'))
+        return redirect(url_for("card.index"))
     else:
-        flash('Пользователь не найден', 'error')
-        return redirect(url_for('card.index'))
+        flash("Пользователь не найден", "error")
+        return redirect(url_for("card.index"))

@@ -8,13 +8,13 @@ from main_app.tools.translate import translate
 
 class BaseModel(db.Model):
     __abstract__ = True
-    __table_args__ = {'sqlite_autoincrement': True}     # remove if postgres
+    __table_args__ = {"sqlite_autoincrement": True}  # remove if postgres
     id = db.Column(db.Integer, primary_key=True)
 
 
 class Card(BaseModel):
-    __tablename__ = 'card'
-    
+    __tablename__ = "card"
+
     original_word = db.Column(db.String(128), unique=True, nullable=False)
     translated_word = db.Column(db.String(128), nullable=False)
     active = db.Column(db.Boolean(), default=True)
@@ -31,49 +31,64 @@ class Card(BaseModel):
 
     @classmethod
     def list_add(cls, words: list, category_name: str) -> bool:
-        custom_translate = None 
+        custom_translate = None
         if len(words) < 1:
-            raise Exception('Length of list with words must me more than 1.')
+            raise Exception("Length of list with words must me more than 1.")
 
         category = Category.get_or_create(category_name)
         for word in words:
-            if ':' in word:
-                word, translated_word = word.split(':')[0], word.split(':')[1]
+            if ":" in word:
+                word, translated_word = word.split(":")[0], word.split(":")[1]
             else:
                 translated_word = translate(word)
                 sleep(0.5)
-            card = db.session.query(Card).filter(Card.original_word==word).first()
+            card = db.session.query(Card).filter(Card.original_word == word).first()
             if card is None:
                 try:
                     card = Card(original_word=word, translated_word=translated_word)
                     db.session.add(card)
                     db.session.commit()
-                    category_and_card = CategoryCards(category_id=category.id, card_id=card.id)
+                    category_and_card = CategoryCards(
+                        category_id=category.id, card_id=card.id
+                    )
                     db.session.add(category_and_card)
                     db.session.commit()
                 except Exception as e:
                     db.session.rollback()
-                    print(f'Not added, {card}, {e}')
+                    print(f"Not added, {card}, {e}")
             else:
-                category_and_card = db.session.query(CategoryCards).filter(CategoryCards.card_id==card.id, CategoryCards.category_id==category.id).first()
+                category_and_card = (
+                    db.session.query(CategoryCards)
+                    .filter(
+                        CategoryCards.card_id == card.id,
+                        CategoryCards.category_id == category.id,
+                    )
+                    .first()
+                )
                 if category_and_card is None:
-                    category_and_card = CategoryCards(category_id=category.id, card_id=card.id)
+                    category_and_card = CategoryCards(
+                        category_id=category.id, card_id=card.id
+                    )
                     db.session.add(category_and_card)
                     db.session.commit()
         return True
 
     def get_related_categories(self) -> list:
         related_categories = list()
-        category_and_card = db.session.query(CategoryCards).filter(CategoryCards.card_id==self.id).all()
+        category_and_card = (
+            db.session.query(CategoryCards)
+            .filter(CategoryCards.card_id == self.id)
+            .all()
+        )
         for elem in category_and_card:
             category = db.session.query(Category).get(elem.category_id)
             related_categories.append(category.name)
-        related_categories = ', '.join(related_categories)
+        related_categories = ", ".join(related_categories)
         return related_categories
 
 
 class Category(BaseModel):
-    __tablename__ = 'category'
+    __tablename__ = "category"
     name = db.Column(db.String(128), unique=True, nullable=False)
     image = db.Column(db.String(1024), nullable=True)
     background = db.Column(db.String(1024), nullable=True)
@@ -84,7 +99,9 @@ class Category(BaseModel):
     @classmethod
     def get_or_create(cls, category_name: str):
         try:
-            category = db.session.query(Category).filter(Category.name == category_name).one()
+            category = (
+                db.session.query(Category).filter(Category.name == category_name).one()
+            )
             return category
         except:
             category = Category(name=category_name)
@@ -99,31 +116,42 @@ class Category(BaseModel):
 
     @property
     def count_words(self) -> int:
-        count_words = db.session.query(CategoryCards).filter(CategoryCards.category_id==self.id).count()
+        count_words = (
+            db.session.query(CategoryCards)
+            .filter(CategoryCards.category_id == self.id)
+            .count()
+        )
         return count_words
 
     def get_first_card_id(self) -> int:
-        category_card = db.session.query(CategoryCards).filter(CategoryCards.category_id==self.id).order_by(CategoryCards.category_id).first()
+        category_card = (
+            db.session.query(CategoryCards)
+            .filter(CategoryCards.category_id == self.id)
+            .order_by(CategoryCards.category_id)
+            .first()
+        )
         return category_card.card_id
 
 
 class CategoryCards(BaseModel):
-    __tablename__ = 'categories_cards'
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    __tablename__ = "categories_cards"
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
     # category = db.relationship('Category')
-    card_id = db.Column(db.Integer, db.ForeignKey('card.id'))
+    card_id = db.Column(db.Integer, db.ForeignKey("card.id"))
     # card = db.relationship('Card')
 
 
 class CardStats(BaseModel):
-    __tablename__ = 'card_stats'
+    __tablename__ = "card_stats"
 
-    card_id = db.Column(db.Integer, db.ForeignKey('card.id'), nullable=False)
-    card = db.relationship('Card')
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User')
+    card_id = db.Column(db.Integer, db.ForeignKey("card.id"), nullable=False)
+    card = db.relationship("Card")
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user = db.relationship("User")
     vote = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime(), default=datetime.now, index=True, nullable=False)
+    created_at = db.Column(
+        db.DateTime(), default=datetime.now, index=True, nullable=False
+    )
 
     @classmethod
     def add(cls, card, user, vote) -> bool:
@@ -132,7 +160,7 @@ class CardStats(BaseModel):
             card_stat = cls(card=card, user=user, vote=vote)
             db.session.add(card_stat)
             db.session.commit()
-            return True 
+            return True
         except:
             db.session.rollback()
             return False
@@ -145,8 +173,12 @@ class CardStats(BaseModel):
 
     @classmethod
     def get_positive_votes(cls, card_id: str) -> int:
-        return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == 1).count()
+        return (
+            db.session.query(cls).filter(cls.card_id == card_id, cls.vote == 1).count()
+        )
 
     @classmethod
     def get_negative_votes(cls, card_id: str) -> int:
-        return db.session.query(cls).filter(cls.card_id==card_id, cls.vote == -1).count()
+        return (
+            db.session.query(cls).filter(cls.card_id == card_id, cls.vote == -1).count()
+        )
