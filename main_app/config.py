@@ -1,4 +1,5 @@
-SQLALCHEMY_DATABASE_URI = "postgresql://hsufoocvazgpwn:a19cc2dc5434e7d4ee4597f93b644c9e4e86397f223120d9cc67a764685d1872@ec2-52-213-119-221.eu-west-1.compute.amazonaws.com:5432/d72jo1qd9960"
+SQLALCHEMY_DATABASE_URI = "postgresql://zlqhjvjyjmzugm:a190bc5c76686ae604ed86029f52bc37bdf5a26d44ba25679d93e17cd1ce0de4@ec2-99-80-73-211.eu-west-1.compute.amazonaws.com:5432/d2v9e9ddvak4ee
+"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 WTF_CSRF_SECRET_KEY = "asdasdas12312313-3-3--33_#_#_!@#(!@^$%()/=1"
 
